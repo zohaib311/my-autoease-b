@@ -1,35 +1,35 @@
 <?php
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, DELETE");
 header("Access-Control-Allow-Headers: Content-Type");
+header("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS");
+header("Content-Type: application/json");
 
-include '../config_db.php';
+include "../config_db.php";
 
 $method = $_SERVER['REQUEST_METHOD'];
 
-if ($method == "GET") {
-    $result = $conn->query("SELECT * FROM cars");
-    $cars = [];
-    while ($row = $result->fetch_assoc()) {
-        $cars[] = $row;
-    }
-    echo json_encode($cars);
+if ($method == "OPTIONS") {
+    // Handle preflight requests
+    exit(0);
 }
 
 if ($method == "POST") {
-    $data = json_decode(file_get_contents("php://input"), true);
+    if (isset($_FILES['image']) && isset($_POST['name']) && isset($_POST['model']) && isset($_POST['manufacturer']) && isset($_POST['transmission']) && isset($_POST['fuelType']) && isset($_POST['price'])) {
+        $name = $conn->real_escape_string($_POST['name']);
+        $model = $conn->real_escape_string($_POST['model']);
+        $manufacturer = $conn->real_escape_string($_POST['manufacturer']);
+        $transmission = $conn->real_escape_string($_POST['transmission']);
+        $fuelType = $conn->real_escape_string($_POST['fuelType']);
+        $price = $conn->real_escape_string($_POST['price']);
+        
+        // Handle file upload
+        $image = $_FILES['image']['name'];
+        $target_dir = "/auto-ease/u-images/";
+        $target_file = $target_dir . basename($image);
+        move_uploaded_file($_FILES['image']['tmp_name'], $target_file);
 
-    if (!empty($data["name"]) && !empty($data["model"])) {
-        $name = $conn->real_escape_string($data["name"]);
-        $model = $conn->real_escape_string($data["model"]);
-        $manufacturer = $conn->real_escape_string($data["manufacturer"]);
-        $transmission = $conn->real_escape_string($data["transmission"]);
-        $fuel_type = $conn->real_escape_string($data["fuelType"]);
-        $price = $conn->real_escape_string($data["price"]);
-        $image = $conn->real_escape_string($data["image"]);
-
-        $sql = "INSERT INTO cars (name, model, manufacturer, transmission, fuel_type, price, image)
-                VALUES ('$name', '$model', '$manufacturer', '$transmission', '$fuel_type', '$price', '$image')";
+        $sql = "INSERT INTO cars (name, model, manufacturer, transmission, fuel_type, price, image, created_at)
+                VALUES ('$name', '$model', '$manufacturer', '$transmission', '$fuelType', '$price', '$target_file', NOW())";
 
         if ($conn->query($sql) === TRUE) {
             echo json_encode(["message" => "Car added successfully"]);
@@ -38,6 +38,21 @@ if ($method == "POST") {
         }
     } else {
         echo json_encode(["error" => "Invalid input"]);
+    }
+}
+
+if ($method == "GET") {
+    $sql = "SELECT * FROM cars ORDER BY created_at DESC";
+    $result = $conn->query($sql);
+
+    if ($result->num_rows > 0) {
+        $cars = [];
+        while($row = $result->fetch_assoc()) {
+            $cars[] = $row;
+        }
+        echo json_encode($cars);
+    } else {
+        echo json_encode([]);
     }
 }
 
