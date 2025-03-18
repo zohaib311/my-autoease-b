@@ -1,7 +1,7 @@
 <?php
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type");
-header("Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS");
+header("Access-Control-Allow-Methods: GET, POST, DELETE, PUT, OPTIONS");
 header("Content-Type: application/json");
 
 include "../config_db.php";
@@ -23,8 +23,8 @@ if ($method == "POST") {
         $price = $conn->real_escape_string($_POST['price']);
         
         // Handle file upload
-        $image = $_FILES['image']['name'];
-        $target_dir = "/auto-ease/u-images/";
+        $image = time().$_FILES['image']['name'];
+        $target_dir = "uploads/";
         $target_file = $target_dir . basename($image);
         move_uploaded_file($_FILES['image']['tmp_name'], $target_file);
 
@@ -67,6 +67,29 @@ if ($method == "DELETE") {
         }
     } else {
         echo json_encode(["error" => "Invalid car ID"]);
+    }
+}
+
+if ($method == "PUT") {
+    $input = json_decode(file_get_contents("php://input"), true);
+    if (isset($input['id']) && isset($input['name']) && isset($input['model']) && isset($input['manufacturer']) && isset($input['transmission']) && isset($input['fuelType']) && isset($input['price'])) {
+        $id = intval($input['id']);
+        $name = $conn->real_escape_string($input['name']);
+        $model = $conn->real_escape_string($input['model']);
+        $manufacturer = $conn->real_escape_string($input['manufacturer']);
+        $transmission = $conn->real_escape_string($input['transmission']);
+        $fuelType = $conn->real_escape_string($input['fuelType']);
+        $price = $conn->real_escape_string($input['price']);
+
+        $sql = "UPDATE cars SET name='$name', model='$model', manufacturer='$manufacturer', transmission='$transmission', fuel_type='$fuelType', price='$price' WHERE id=$id";
+
+        if ($conn->query($sql) === TRUE) {
+            echo json_encode(["message" => "Car updated successfully"]);
+        } else {
+            echo json_encode(["error" => "Error: " . $conn->error]);
+        }
+    } else {
+        echo json_encode(["error" => "Invalid input"]);
     }
 }
 
