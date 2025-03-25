@@ -13,6 +13,8 @@ if ($method == "OPTIONS") {
     exit(0);
 }
 
+//post method to post to the database also called CREATE.
+
 if ($method == "POST") {
     if (isset($_FILES['image']) && isset($_POST['name']) && isset($_POST['model']) && isset($_POST['manufacturer']) && isset($_POST['transmission']) && isset($_POST['fuelType']) && isset($_POST['price'])) {
         $name = $conn->real_escape_string($_POST['name']);
@@ -41,6 +43,8 @@ if ($method == "POST") {
     }
 }
 
+
+// featch request and get from database also called READ.
 if ($method == "GET") {
     $sql = "SELECT * FROM cars ORDER BY created_at DESC";
     $result = $conn->query($sql);
@@ -56,6 +60,8 @@ if ($method == "GET") {
     }
 }
 
+
+// delete method from database also called DELETE.
 if ($method == "DELETE") {
     $id = isset($_GET["id"]) ? intval($_GET["id"]) : 0;
     if ($id > 0) {
@@ -69,6 +75,9 @@ if ($method == "DELETE") {
         echo json_encode(["error" => "Invalid car ID"]);
     }
 }
+
+
+// Update method that will update in database also called UPDATE.
 
 if ($method == "PUT") {
     $input = json_decode(file_get_contents("php://input"), true);
