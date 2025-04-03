@@ -26,16 +26,22 @@ if ($result->num_rows > 0) {
         $payload = [
             "id" => $user["id"],
             "username" => $user["username"],
+            "role" => $user["role"], // Include role in the payload
             "exp" => time() + 3600 // Token expires in 1 hour
         ];
 
         $jwt = base64_encode(json_encode($payload)) . "." . base64_encode(hash_hmac('sha256', json_encode($payload), SECRET_KEY, true));
         
-        echo json_encode(["token" => $jwt]);
+        echo json_encode([
+            "token" => $jwt,
+            "role" => $user["role"] // Return role in the response
+        ]);
     } else {
         echo json_encode(["error" => "Invalid password"]);
     }
 } else {
     echo json_encode(["error" => "User not found"]);
 }
+
+$conn->close();
 ?>
