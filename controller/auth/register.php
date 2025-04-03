@@ -34,7 +34,10 @@ if ($result->num_rows > 0) {
 // Insert user into database
 $sql = "INSERT INTO users (username, email, password, role) VALUES ('$username', '$email', '$password', '$role')";
 if ($conn->query($sql) === TRUE) {
-    echo json_encode(["success" => "User registered successfully"]);
+    echo json_encode([
+        "success" => "User registered successfully",
+        "role" => $role // Return the role in the response
+    ]);
 } else {
     echo json_encode(["error" => "Registration failed"]);
 }

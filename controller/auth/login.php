@@ -8,16 +8,16 @@ require "secret.key"; // Secret key file
 
 $data = json_decode(file_get_contents("php://input"));
 
-if (!isset($data->username) || !isset($data->password)) {
+if (!isset($data->email) || !isset($data->password)) {
     echo json_encode(["error" => "Invalid input"]);
     exit;
 }
 
-$username = $conn->real_escape_string($data->username);
+$email = $conn->real_escape_string($data->email);
 $password = $data->password;
 
 // Fetch user from database
-$sql = "SELECT * FROM users WHERE username='$username'";
+$sql = "SELECT * FROM users WHERE email='$email'";
 $result = $conn->query($sql);
 
 if ($result->num_rows > 0) {
@@ -25,7 +25,7 @@ if ($result->num_rows > 0) {
     if (password_verify($password, $user['password'])) {
         $payload = [
             "id" => $user["id"],
-            "username" => $user["username"],
+            "email" => $user["email"],
             "role" => $user["role"], // Include role in the payload
             "exp" => time() + 3600 // Token expires in 1 hour
         ];
