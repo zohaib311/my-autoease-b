@@ -7,7 +7,7 @@ error_log("Authorization header: " . $headers["Authorization"]);
 error_log("Payload: " . json_encode($payload));
 error_log("Generated signature: " . $signature);
 
-require "secret.key"; // Ensure SECRET_KEY is defined in this file
+require "./secret.key"; // Ensure SECRET_KEY is defined in this file
 
 $headers = getallheaders();
 

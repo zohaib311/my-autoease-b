@@ -6,13 +6,11 @@ header("Access-Control-Allow-Methods: GET, POST, DELETE, PUT, OPTIONS");
 header("Content-Type: application/json");
 
 require_once '../controller/auth/authMiddleware.php';
+require_once '../config_db.php';
 
 $user = authenticate();
 isCustomer($user);
 
-$method = $_SERVER['REQUEST_METHOD'];
-$db = new Database();
-$conn = $db->getConnection();
 
 switch ($method) {
     case 'GET':

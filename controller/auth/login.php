@@ -6,6 +6,10 @@ header("Content-Type: application/json");
 include "../../config_db.php";
 require "secret.key"; // Secret key file
 
+if (!defined('SECRET_KEY')) {
+    define('SECRET_KEY', 'mysecretkey12345'); // Replace 'your-secret-key' with the actual secret key
+}
+
 $data = json_decode(file_get_contents("php://input"));
 
 if (!isset($data->email) || !isset($data->password)) {
