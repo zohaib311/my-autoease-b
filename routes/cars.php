@@ -26,7 +26,7 @@ if ($method == "POST") {
         
         // Handle file upload
         $image = time().$_FILES['image']['name'];
-        $target_dir = "uploads/";
+        $target_dir = "../uploads/";
         $target_file = $target_dir . basename($image);
         move_uploaded_file($_FILES['image']['tmp_name'], $target_file);
 

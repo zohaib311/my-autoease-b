@@ -9,7 +9,16 @@ require_once '../controller/auth/authMiddleware.php';
 require_once '../config_db.php';
 
 $user = authenticate();
+function isCustomer($user) {
+    if ($user['role'] !== 'customer') {
+        http_response_code(403);
+        echo json_encode(['error' => 'Access denied.']);
+        exit;
+    }
+}
+
 isCustomer($user);
+
 
 
 switch ($method) {

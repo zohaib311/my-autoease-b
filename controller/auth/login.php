@@ -4,10 +4,10 @@ header("Access-Control-Allow-Headers: Content-Type");
 header("Content-Type: application/json");
 
 include "../../config_db.php";
-require "secret.key"; // Secret key file
+require "secret.key"; 
 
 if (!defined('SECRET_KEY')) {
-    define('SECRET_KEY', 'mysecretkey12345'); // Replace 'your-secret-key' with the actual secret key
+    define('SECRET_KEY', 'mysecretkey12345');
 }
 
 $data = json_decode(file_get_contents("php://input"));

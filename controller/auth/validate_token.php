@@ -3,11 +3,7 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json");
 
-error_log("Authorization header: " . $headers["Authorization"]);
-error_log("Payload: " . json_encode($payload));
-error_log("Generated signature: " . $signature);
-
-require "./secret.key"; // Ensure SECRET_KEY is defined in this file
+require "./secret.key"; 
 
 $headers = getallheaders();
 
