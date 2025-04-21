@@ -1,29 +1,68 @@
 <?php
-require "../config_db.php"; // Include database connection
-require "../controller/auth/auth.php"; // Include JWT auth script
-
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 header("Content-Type: application/json");
 
-$data = json_decode(file_get_contents("php://input"));
+require_once "../controller/auth/auth_middleware.php";
+require_once "../config_db.php"; // Ensure this file contains the global $conn variable
 
-$user_id = authenticate(); // Get user ID from JWT
-$car_id = $conn->real_escape_string($data->car_id);
-$city = $conn->real_escape_string($data->delivery_city);
-$address = $conn->real_escape_string($data->delivery_address);
-$charges = (float)$data->delivery_charges;
-$total = (float)$data->total_amount;
-$method = $conn->real_escape_string($data->payment_method);
-$notes = isset($data->notes) ? $conn->real_escape_string($data->notes) : "";
+$user = authenticate(); // Authenticate the user
+isCustomer($user); // Ensure the user has the "customer" role
 
-$sql = "INSERT INTO orders 
-(user_id, car_id, delivery_city, delivery_address, delivery_charges, total_amount, payment_method, notes)
-VALUES 
-('$user_id', '$car_id', '$city', '$address', '$charges', '$total', '$method', '$notes')";
+$data = json_decode(file_get_contents("php://input"), true);
 
-if ($conn->query($sql)) {
-    echo json_encode(["message" => "Order placed successfully"]);
-} else {
-    echo json_encode(["error" => "Order failed: " . $conn->error]);
+// Validate required fields
+if (!isset($data['car_id']) || !isset($data['total_amount']) || !isset($data['full_name']) || !isset($data['email']) || !isset($data['phone']) || !isset($data['delivery_address'])) {
+    echo json_encode(["error" => "All fields are required"]);
+    exit;
 }
-$conn->close();
+
+// Extract data from the request
+$car_id = $data['car_id'];
+$total_amount = $data['total_amount'];
+$full_name = $data['full_name'];
+$email = $data['email'];
+$phone = $data['phone'];
+$delivery_city = $data['delivery_city'] ?? '';
+$delivery_address = $data['delivery_address'];
+$delivery_charges = $data['delivery_charges'] ?? 0;
+$delivery_date = $data['delivery_date'] ?? date('Y-m-d');
+$postal = $data['postal'] ?? '';
+$notes = $data['notes'] ?? '';
+$payment_method = $data['payment_method'] ?? 'cash_on_delivery';
+
+try {
+    // Use the existing database connection ($conn)
+    global $conn;
+
+    $stmt = $conn->prepare("
+        INSERT INTO orders (user_id, car_id, total_amount, full_name, email, phone, delivery_city, delivery_address, delivery_charges, delivery_date, postal, notes, payment_method)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    ");
+    $stmt->bind_param(
+        "iisssssssssss",
+        $user['id'],
+        $car_id,
+        $total_amount,
+        $full_name,
+        $email,
+        $phone,
+        $delivery_city,
+        $delivery_address,
+        $delivery_charges,
+        $delivery_date,
+        $postal,
+        $notes,
+        $payment_method
+    );
+
+    if ($stmt->execute()) {
+        echo json_encode(["success" => true, "message" => "Order placed successfully!"]);
+    } else {
+        echo json_encode(["error" => "Failed to place order."]);
+    }
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(["error" => "An error occurred: " . $e->getMessage()]);
+}
 ?>
