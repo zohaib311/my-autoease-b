@@ -1,44 +1,68 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Content-Type: application/json");
+// CORS headers
+header("Access-Control-Allow-Origin: http://localhost:3000"); // Allow requests from your frontend origin
+header("Access-Control-Allow-Methods: POST, GET, OPTIONS"); // Allow specific HTTP methods
+header("Access-Control-Allow-Headers: Content-Type, Authorization"); // Allow specific headers
+header("Access-Control-Allow-Credentials: true"); // Allow credentials (if needed)
 
-require '../config_db.php'; // Include your database connection file
-require '../controller/auth/validate_token.php'; // Include your token validation file
-
-$data = json_decode(file_get_contents("php://input"), true);
-
-$user_id = $data["user_id"];
-$car_id = $data["car_id"];
-
-if (!$user_id || !$car_id) {
-    echo json_encode(["error" => "Missing user_id or car_id"]);
+// Handle preflight (OPTIONS) requests
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200); // Respond with HTTP 200 for preflight requests
     exit;
 }
 
-// Validate user_id
-$stmt = $conn->prepare("SELECT id FROM users WHERE id = ?");
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$result = $stmt->get_result();
+// Include your database connection
+require '../config_db.php';
+// require '../controller/auth/validate_token.php'; // Uncomment if using token validation
 
-if ($result->num_rows === 0) {
-    echo json_encode(["error" => "Invalid user_id. User does not exist."]);
+// Read input data
+$input = file_get_contents("php://input");
+$data = json_decode($input);
+
+// Check if data is valid
+if (!isset($data->cart_items->id)) {
+    http_response_code(400);
+    echo json_encode(["success" => false, "message" => "Invalid input: Car ID is missing."]);
     exit;
 }
 
-$stmt->close();
+// Sample user_id (later replace it with user_id from token)
+// $user_id = $decoded_token->user_id;
 
-// Insert into cart
-$stmt = $conn->prepare("INSERT INTO cart (user_id, car_id) VALUES (?, ?)");
-$stmt->bind_param("ii", $user_id, $car_id);
+$user_id = 10;
+$car_id = $data->cart_items->id;
 
-if ($stmt->execute()) {
-    echo json_encode(["success" => true, "message" => "Car added to cart in database"]);
+// Check if this car is already added for this user
+$checkStmt = $conn->prepare("SELECT id FROM carts WHERE user_id = ? AND car_id = ?");
+$checkStmt->bind_param("ii", $user_id, $car_id);
+$checkStmt->execute();
+$checkStmt->store_result();
+
+if ($checkStmt->num_rows > 0) {
+    // Duplicate found
+    http_response_code(409); // Conflict
+    echo json_encode(["success" => false, "message" => "Duplicate entry: Car already in cart."]);
 } else {
-    echo json_encode(["error" => "Database insert failed"]);
+    // No duplicate, insert
+    $insertStmt = $conn->prepare("INSERT INTO carts (user_id, car_id) VALUES (?, ?)");
+    if ($insertStmt === false) {
+        http_response_code(500);
+        echo json_encode(["success" => false, "message" => "Database error: Prepare failed."]);
+        exit;
+    }
+    $insertStmt->bind_param("ii", $user_id, $car_id);
+
+    if ($insertStmt->execute()) {
+        http_response_code(201);
+        echo json_encode(["success" => true, "message" => "Car added to cart successfully."]);
+    } else {
+        http_response_code(500);
+        echo json_encode(["success" => false, "message" => "Database error while inserting."]);
+    }
+    $insertStmt->close();
 }
 
-$stmt->close();
+// Close resources
+$checkStmt->close();
 $conn->close();
 ?>
