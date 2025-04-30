@@ -1,50 +1,39 @@
 <?php
-require_once __DIR__ . '/../../vendor/autoload.php'; // Include the JWT library
+require_once __DIR__ . '/../../vendor/autoload.php'; // Firebase JWT
 use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 
-// Define your secret key (ensure this is stored securely)
+// Define your secret key
 define("SECRET_KEY", "mysecretkey12345");
 
-function authenticate() {
+function authenticateCustomer() {
     $headers = getallheaders();
 
-    // Check if the Authorization header is present
     if (!isset($headers['Authorization'])) {
         http_response_code(401);
-        echo json_encode(['error' => 'Authorization token required']);
+        echo json_encode(['error' => 'Authorization header missing']);
         exit;
     }
 
-    // Extract the token from the Authorization header
     $token = str_replace('Bearer ', '', $headers['Authorization']);
 
     try {
-        // Decode the JWT token
         $decoded = JWT::decode($token, new Key(SECRET_KEY, 'HS256'));
 
-        // Ensure the token contains a user_id
-        if (!isset($decoded->user_id)) {
-            http_response_code(401);
-            echo json_encode(['error' => 'Invalid token payload']);
+        // Convert stdClass to array
+        $user = json_decode(json_encode($decoded), true);
+
+        if (!isset($user['role']) || $user['role'] !== 'customer') {
+            http_response_code(403);
+            echo json_encode(['error' => 'Access denied. Customer role required.']);
             exit;
         }
 
-        // Return the decoded token as an associative array
-        return (array) $decoded;
+        return $user;
+
     } catch (Exception $e) {
         http_response_code(401);
         echo json_encode(['error' => 'Invalid token: ' . $e->getMessage()]);
         exit;
     }
-}
-
-function isCustomer($user) {
-    // Check if the user's role is 'customer'
-    if (!isset($user['role']) || $user['role'] !== 'customer') {
-        http_response_code(403);
-        echo json_encode(['error' => 'Access denied. Customer role required']);
-        exit;
-    }
-    return true;
 }
