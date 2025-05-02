@@ -6,5 +6,6 @@ $vendorDir = dirname(__DIR__);
 $baseDir = dirname($vendorDir);
 
 return array(
+    'Stripe\\' => array($vendorDir . '/stripe/stripe-php/lib'),
     'Firebase\\JWT\\' => array($vendorDir . '/firebase/php-jwt/src'),
 );

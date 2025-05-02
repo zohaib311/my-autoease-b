@@ -14,6 +14,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 // Include your database connection
 require '../config_db.php';
 // require '../controller/auth/validate_token.php'; // Uncomment if using token validation
+// require '../controller/auth/auth_middleware.php'; // Uncomment if using token validation
+// require '../controller/auth/auth.php'; // Uncomment if using token validation
 
 // Read input data
 $input = file_get_contents("php://input");
@@ -30,6 +32,7 @@ if (!isset($data->cart_items->id)) {
 // $user_id = $decoded_token->user_id;
 
 $user_id = 10;
+// $user_id = $data->user_id; // For testing purposes, replace with actual user ID from authentication
 $car_id = $data->cart_items->id;
 
 // Check if this car is already added for this user

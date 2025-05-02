@@ -1,66 +1,105 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Access-Control-Allow-Origin: http://localhost:3000"); // Allow requests from your frontend origin
+header("Access-Control-Allow-Methods: POST, OPTIONS"); // Allow POST and OPTIONS methods
+header("Access-Control-Allow-Headers: Content-Type, Authorization"); // Allow specific headers
+header("Access-Control-Allow-Credentials: true"); // Allow credentials (if needed)
 header("Content-Type: application/json");
-header("Access-Control-Allow-Credentials: true");
-header("Access-Control-Max-Age: 3600"); // Cache preflight response for 1 hour
-header("Access-Control-Allow-Origin: http://localhost:3000"); // Replace with your frontend's origin
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
 
-require_once "../controller/auth/auth.php";
-require_once "../config_db.php";
+require '../config_db.php'; // Include your database connection
+// require '../controller/auth/auth.php'; // Include authentication middleware
 
-$user = authenticate(); // Authenticate the user
-isCustomer($user); // Ensure the user has the "customer" role
-
-$data = json_decode(file_get_contents("php://input"), true);
-
-// Validate required fields
-if (!isset($data['car_id']) || !isset($data['total_amount']) || !isset($data['user_name']) || !isset($data['user_email']) || !isset($data['user_phone']) || !isset($data['delivery_address'])) {
-    echo json_encode(["error" => "All fields are required"]);
+// Handle preflight (OPTIONS) requests
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(200);
     exit;
 }
 
-// Extract data from the request
+// $user = authenticate(); // Authenticate the user
+// isCustomer($user); // Ensure the user has the "customer" role
+
+// $user_id = $user['user_id']; // Get the logged-in user's ID
+$user_id = 10; // For testing purposes, replace with actual user ID from authentication
+$data = json_decode(file_get_contents("php://input"), true);
+
+// Validate input
+if (!isset($data['car_id'], $data['payment_method'])) {
+    http_response_code(400);
+    echo json_encode(["success" => false, "message" => "Car ID and payment method are required"]);
+    exit;
+}
+
 $car_id = $data['car_id'];
-$total_amount = $data['total_amount'];
-$user_name = $data['user_name'];
-$user_email = $data['user_email'];
-$user_phone = $data['user_phone'];
-$delivery_city = $data['delivery_city'] ?? '';
-$delivery_address = $data['delivery_address'];
-$payment_method = $data['payment_method'] ?? 'cash_on_delivery';
+$payment_method = $data['payment_method'];
+$delivery_charges = $data['delivery_charges'] ?? 10000; // Default delivery charges
+$notes = $data['notes'] ?? null;
 
 try {
     global $conn;
 
+    // Fetch customer profile
+    $stmt = $conn->prepare("SELECT name, email, phone, city, address FROM customer_profiles WHERE user_id = ?");
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 0) {
+        echo json_encode(["success" => false, "message" => "Customer profile not found"]);
+        exit;
+    }
+
+    $profile = $result->fetch_assoc();
+    $name = $profile['name'];
+    $email = $profile['email'];
+    $phone = $profile['phone'];
+    $city = $profile['city'];
+    $address = $profile['address'];
+
+    // Calculate total amount
+    $stmt = $conn->prepare("SELECT price FROM cars WHERE id = ?");
+    $stmt->bind_param("i", $car_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows === 0) {
+        echo json_encode(["success" => false, "message" => "Car not found"]);
+        exit;
+    }
+
+    $car = $result->fetch_assoc();
+    $car_price = $car['price'];
+    $total_amount = $car_price + $delivery_charges;
+
+    // Insert order into the database
     $stmt = $conn->prepare("
-        INSERT INTO orders (user_id, car_id, total_amount, user_name, user_email, user_phone, delivery_city, delivery_address, payment_method)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO orders (user_id, car_id, name, email, phone, city, address, delivery_charges, total_amount, payment_method, notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
     $stmt->bind_param(
-        "iisssssss",
-        $user['id'],
+        "iisssssddss",
+        $user_id,
         $car_id,
+        $name,
+        $email,
+        $phone,
+        $city,
+        $address,
+        $delivery_charges,
         $total_amount,
-        $user_name,
-        $user_email,
-        $user_phone,
-        $delivery_city,
-        $delivery_address,
-        $payment_method
+        $payment_method,
+        $notes
     );
 
     if ($stmt->execute()) {
-        echo json_encode(["success" => true, "message" => "Order placed successfully!"]);
+        echo json_encode(["success" => true, "message" => "Order placed successfully"]);
     } else {
-        error_log("Database Error: " . $conn->error);
-        echo json_encode(["error" => "Failed to place order."]);
+        echo json_encode(["success" => false, "message" => "Failed to place order"]);
     }
+
+    $stmt->close();
 } catch (Exception $e) {
-    error_log("Exception: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode(["error" => "An error occurred: " . $e->getMessage()]);
+    echo json_encode(["success" => false, "message" => "An error occurred: " . $e->getMessage()]);
 }
+
+$conn->close();
 ?>
