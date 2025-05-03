@@ -2,10 +2,10 @@
 header("Access-Control-Allow-Origin: http://localhost:3000");
 header("Access-Control-Allow-Methods: GET");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
-header("Access-Control-Allow-Credentials: true");
+header("Content-Type: application/json");
 
-require '../config_db.php';
-require '../controller/auth/validate_token.php';
+require '../../config_db.php';
+require '../auth/validate_token.php';
 
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     http_response_code(405); // Method Not Allowed
@@ -16,29 +16,25 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 try {
     $user = validateToken();
 
-    $stmt = $conn->prepare("
-        SELECT 
-            orders.id, 
-            cars.name AS car_name, 
-            orders.total_amount, 
-            orders.status, 
-            orders.created_at
-        FROM orders
-        JOIN cars ON orders.car_id = cars.id
-        WHERE orders.user_id = ?
-        ORDER BY orders.created_at DESC
-    ");
-    $stmt->bind_param("i", $user['id']);
+    // Check if the user is an admin
+    if ($user['role'] !== 'admin') {
+        http_response_code(403); // Forbidden
+        echo json_encode(["success" => false, "message" => "Unauthorized access"]);
+        exit;
+    }
+
+    // Fetch all users
+    $stmt = $conn->prepare("SELECT id, username, email, role FROM users ORDER BY id ASC ");
     $stmt->execute();
 
     $result = $stmt->get_result();
-    $orders = [];
+    $users = [];
 
     while ($row = $result->fetch_assoc()) {
-        $orders[] = $row;
+        $users[] = $row;
     }
 
-    echo json_encode(["success" => true, "orders" => $orders]);
+    echo json_encode(["success" => true, "users" => $users]);
 
     $stmt->close();
     $conn->close();

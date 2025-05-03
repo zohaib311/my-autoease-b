@@ -8,6 +8,7 @@ include "../config_db.php";
 $manufacturer = isset($_GET['manufacturer']) ? $conn->real_escape_string($_GET['manufacturer']) : '';
 $transmission = isset($_GET['transmission']) ? $conn->real_escape_string($_GET['transmission']) : '';
 $fuel_type = isset($_GET['fuel_type']) ? $conn->real_escape_string($_GET['fuel_type']) : '';
+$available_city = isset($_GET['available_city']) ? $conn->real_escape_string($_GET['available_city']) : '';
 
 
 // Build the SQL query
@@ -22,6 +23,9 @@ if (!empty($fuel_type)) {
 }
 if (!empty($transmission)) {
     $sql .= " AND transmission='$transmission'";
+}
+if (!empty($available_city)) {
+    $sql .= " AND available_city='$available_city'";
 }
 
 // Add ORDER BY clause to sort cars in descending order by created_at

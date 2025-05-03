@@ -16,13 +16,14 @@ if ($method == "OPTIONS") {
 //post method to post to the database also called CREATE.
 
 if ($method == "POST") {
-    if (isset($_FILES['image']) && isset($_POST['name']) && isset($_POST['year']) && isset($_POST['manufacturer']) && isset($_POST['transmission']) && isset($_POST['fuelType']) && isset($_POST['price'])) {
+    if (isset($_FILES['image']) && isset($_POST['name']) && isset($_POST['year']) && isset($_POST['manufacturer']) && isset($_POST['transmission']) && isset($_POST['fuelType']) && isset($_POST['price'])  && isset($_POST['available_city'])) {
         $name = $conn->real_escape_string($_POST['name']);
         $year = $conn->real_escape_string($_POST['year']);
         $manufacturer = $conn->real_escape_string($_POST['manufacturer']);
         $transmission = $conn->real_escape_string($_POST['transmission']);
         $fuelType = $conn->real_escape_string($_POST['fuelType']);
         $price = $conn->real_escape_string($_POST['price']);
+        $available_city = $conn->real_escape_string($_POST['available_city']);
         
         // Handle file upload
         $image = time().$_FILES['image']['name'];
@@ -30,8 +31,8 @@ if ($method == "POST") {
         $target_file = $target_dir . basename($image);
         move_uploaded_file($_FILES['image']['tmp_name'], $target_file);
 
-        $sql = "INSERT INTO cars (name, year, manufacturer, transmission, fuel_type, price, image, created_at)
-                VALUES ('$name', '$year', '$manufacturer', '$transmission', '$fuelType', '$price', '$target_file', NOW())";
+        $sql = "INSERT INTO cars (name, year, manufacturer, transmission, fuel_type, price, image, created_at, available_city)
+                VALUES ('$name', '$year', '$manufacturer', '$transmission', '$fuelType', '$price', '$target_file', NOW(), '$available_city')";
 
         if ($conn->query($sql) === TRUE) {
             echo json_encode(["message" => "Car added successfully"]);
@@ -81,7 +82,7 @@ if ($method == "DELETE") {
 
 if ($method == "PUT") {
     $input = json_decode(file_get_contents("php://input"), true);
-    if (isset($input['id']) && isset($input['name']) && isset($input['year']) && isset($input['manufacturer']) && isset($input['transmission']) && isset($input['fuelType']) && isset($input['price'])) {
+    if (isset($input['id']) && isset($input['name']) && isset($input['year']) && isset($input['manufacturer']) && isset($input['transmission']) && isset($input['fuelType']) && isset($input['price'])  && isset($input['available_city'])) {
         $id = intval($input['id']);
         $name = $conn->real_escape_string($input['name']);
         $year = $conn->real_escape_string($input['year']);
@@ -89,8 +90,9 @@ if ($method == "PUT") {
         $transmission = $conn->real_escape_string($input['transmission']);
         $fuelType = $conn->real_escape_string($input['fuelType']);
         $price = $conn->real_escape_string($input['price']);
-
-        $sql = "UPDATE cars SET name='$name', year='$year', manufacturer='$manufacturer', transmission='$transmission', fuel_type='$fuelType', price='$price' WHERE id=$id";
+        $available_city = $conn->real_escape_string($input['available_city']);
+        
+        $sql = "UPDATE cars SET name='$name', year='$year', manufacturer='$manufacturer', transmission='$transmission', fuel_type='$fuelType', price='$price', available_city='$available_city' WHERE id=$id";
 
         if ($conn->query($sql) === TRUE) {
             echo json_encode(["message" => "Car updated successfully"]);

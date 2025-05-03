@@ -35,6 +35,7 @@ try {
             cars.fuel_type,
             cars.manufacturer,
             cars.image,
+            cars.available_city,
             carts.id AS cart_id
         FROM carts
         JOIN cars ON carts.car_id = cars.id

@@ -16,19 +16,26 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 try {
     $user = validateToken();
 
+    // Check if the user is an admin
+    if ($user['role'] !== 'admin') {
+        http_response_code(403); // Forbidden
+        echo json_encode(["success" => false, "message" => "Unauthorized access"]);
+        exit;
+    }
+
+    // Fetch all orders with corresponding user ID
     $stmt = $conn->prepare("
         SELECT 
-            orders.id, 
-            cars.name AS car_name, 
-            orders.total_amount, 
-            orders.status, 
+            orders.id AS order_id,
+            orders.user_id,
+            cars.name AS car_name,
+            orders.total_amount,
+            orders.status,
             orders.created_at
         FROM orders
         JOIN cars ON orders.car_id = cars.id
-        WHERE orders.user_id = ?
         ORDER BY orders.created_at DESC
     ");
-    $stmt->bind_param("i", $user['id']);
     $stmt->execute();
 
     $result = $stmt->get_result();

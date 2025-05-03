@@ -69,7 +69,7 @@ try {
 
     // Insert order into the database
     $stmt = $conn->prepare("
-        INSERT INTO orders (user_id, car_id, name, email, phone, city, address, delivery_charges, total_amount, payment_method, notes)
+        INSERT INTO orders (user_id, car_id, name, email, phone, city, address, delivery_charges, total_amount, payment_method, notes, status)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
     $stmt->bind_param(
@@ -84,8 +84,11 @@ try {
         $delivery_charges,
         $total_amount,
         $payment_method,
-        $notes
+        $notes,
+        $status
     );
+
+    $status = 'pending'; // Default status
 
     if ($stmt->execute()) {
         echo json_encode(["success" => true, "message" => "Order placed successfully"]);
