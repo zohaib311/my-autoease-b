@@ -1,8 +1,7 @@
 <?php
 require_once '../vendor/autoload.php';
 require_once '../config_db.php'; // Include your database connection
-require_once '../controller/auth/auth_middleware.php'; // Include authentication middleware
-require_once '../controller/auth/auth.php'; // Include authentication middleware
+require_once '../controller/auth/validate_token.php'; // Include authentication middleware
 
 \Stripe\Stripe::setApiKey('sk_test_51RJgLmQpF59V7kiLqlA1zyl2Loj2cxnSDZmnTcixZYzCDLO8TZzJg5vF3KpmQvG4QB67zzb3bjE0XcC6UVBgS2eI008RIlUpfj'); // Replace with your Stripe Secret Key
 
@@ -18,8 +17,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 // Authenticate the user and fetch the user ID from the token
 try {
-    $user = authenticate(); // This function should decode the token and return user details
-    $user_id = $user['user_id']; // Extract user_id from the decoded token
+    $user = validateToken(); // This function should decode the token and return user details
+    $user_id = $user['id']; // Extract user_id from the decoded token
 } catch (Exception $e) {
     http_response_code(401);
     echo json_encode(["error" => "Unauthorized: " . $e->getMessage()]);

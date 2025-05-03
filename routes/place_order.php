@@ -6,7 +6,7 @@ header("Access-Control-Allow-Credentials: true"); // Allow credentials (if neede
 header("Content-Type: application/json");
 
 require '../config_db.php'; // Include your database connection
-// require '../controller/auth/auth.php'; // Include authentication middleware
+require '../controller/auth/validate_token.php'; // Include authentication middleware
 
 // Handle preflight (OPTIONS) requests
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -14,17 +14,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-// $user = authenticate(); // Authenticate the user
+$user = validateToken();
+$user_id = $user['id']; // Authenticate the user
 // isCustomer($user); // Ensure the user has the "customer" role
-
-// $user_id = $user['user_id']; // Get the logged-in user's ID
-$user_id = 10; // For testing purposes, replace with actual user ID from authentication
 $data = json_decode(file_get_contents("php://input"), true);
 
 // Validate input
-if (!isset($data['car_id'], $data['payment_method'])) {
+if (!isset($data['car_id'], $data['payment_method'], $data['delivery_charges'])) {
     http_response_code(400);
-    echo json_encode(["success" => false, "message" => "Car ID and payment method are required"]);
+    echo json_encode(["success" => false, "message" => "Car ID, payment method, and delivery charges are required"]);
     exit;
 }
 

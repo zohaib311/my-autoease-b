@@ -4,13 +4,8 @@ header("Access-Control-Allow-Headers: Content-Type");
 header("Content-Type: application/json");
 
 include_once __DIR__ . "/../../vendor/autoload.php"; // Include Composer's autoloader
-// use Firebase\JWT\JWT;
+use Firebase\JWT\JWT;
 include "../../config_db.php";
-require "./secret.key"; 
-
-if (!defined('SECRET_KEY')) {
-    define('SECRET_KEY', 'mysecretkey12345');
-}
 
 $data = json_decode(file_get_contents("php://input"));
 
@@ -36,10 +31,9 @@ if ($result->num_rows > 0) {
             "exp" => time() + 3600 // Token expires in 1 hour
         ];
 
-        // $secretKey = file_get_contents(__DIR__ . "/secret.key");
-        // $jwt = JWT::encode($payload, $secretKey, 'HS256');
-        $jwt = base64_encode(json_encode($payload)) . "." . base64_encode(hash_hmac('sha256', json_encode($payload), SECRET_KEY, true));
-        
+        $secretKey = file_get_contents(__DIR__ . "/secret.key"); // Read the secret key
+        $jwt = JWT::encode($payload, $secretKey, 'HS256'); // Generate the JWT token
+
         echo json_encode([
             "token" => $jwt,
             "role" => $user["role"] // Return role in the response
@@ -48,7 +42,7 @@ if ($result->num_rows > 0) {
         echo json_encode(["error" => "Invalid password"]);
     }
 } else {
-    echo json_encode(["error" => "User not found"]);
+    echo json_encode(["error" => "Incorrect email"]);
 }
 
 $conn->close();

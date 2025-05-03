@@ -6,6 +6,7 @@ header("Access-Control-Allow-Credentials: true"); // Allow credentials (if neede
 header("Content-Type: application/json");
 
 require '../config_db.php'; // Include your database connection
+require '../controller/auth/validate_token.php'; // Include authentication middleware
 
 // Handle preflight (OPTIONS) requests
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
@@ -15,9 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 // Authenticate the user (you can use your token validation logic here)
 
-// require '../controller/auth/auth_middleware.php';
-// $user = authenticate(); // Authenticate the user
-// isCustomer($user); // Ensure the user has the "customer" role
+$user = validateToken(); // Authenticate the user
 
 // Get the cart_id from the query string
 if (!isset($_GET['cart_id'])) {
@@ -27,7 +26,7 @@ if (!isset($_GET['cart_id'])) {
 }
 
 $cart_id = intval($_GET['cart_id']);
-$user_id = 10; // Assume user ID is known (later take from token)
+$user_id = validateToken()['id'];
 
 try {
     global $conn;
