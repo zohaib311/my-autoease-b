@@ -70,10 +70,10 @@ try {
     // Insert order into the database
     $stmt = $conn->prepare("
         INSERT INTO orders (user_id, car_id, name, email, phone, city, address, delivery_charges, total_amount, payment_method, notes, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
     $stmt->bind_param(
-        "iisssssddss",
+        "iissssssddss",
         $user_id,
         $car_id,
         $name,
