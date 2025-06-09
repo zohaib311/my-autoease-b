@@ -91,9 +91,19 @@ try {
     $status = 'pending'; // Default status
 
     if ($stmt->execute()) {
-        echo json_encode(["success" => true, "message" => "Order placed successfully"]);
+        // Get the last inserted order ID
+        $order_id = $conn->insert_id;
+    
+        echo json_encode([
+            "success" => true,
+            "message" => "Order placed successfully",
+            "order_id" => $order_id // Include the order ID in the response
+        ]);
     } else {
-        echo json_encode(["success" => false, "message" => "Failed to place order"]);
+        echo json_encode([
+            "success" => false,
+            "message" => "Failed to place order"
+        ]);
     }
 
     $stmt->close();
@@ -103,4 +113,3 @@ try {
 }
 
 $conn->close();
-?>
