@@ -19,8 +19,14 @@ $user_id = $user['id']; // Authenticate the user
 // isCustomer($user); // Ensure the user has the "customer" role
 $data = json_decode(file_get_contents("php://input"), true);
 
+if (!isset($data['payment_method']) || empty($data['payment_method'])) {
+    http_response_code(400);
+    echo json_encode(["success" => false, "message" => "Payment method is required"]);
+    exit;
+}
+$payment_method = $data['payment_method'];
 // Validate input
-if (!isset($data['car_id'], $data['payment_method'], $data['delivery_charges'])) {
+if (!isset($data['car_id'], $payment_method, $data['delivery_charges'])) {
     http_response_code(400);
     echo json_encode(["success" => false, "message" => "Car ID, payment method, and delivery charges are required"]);
     exit;
@@ -73,7 +79,7 @@ try {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ");
     $stmt->bind_param(
-        "iissssssddss",
+        "iissssssdsss",
         $user_id,
         $car_id,
         $name,
@@ -106,6 +112,9 @@ try {
         ]);
     }
 
+    // echo("Payment Method Before Insert: " . $payment_method);
+    
+    
     $stmt->close();
 } catch (Exception $e) {
     http_response_code(500);

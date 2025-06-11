@@ -21,6 +21,7 @@ try {
             orders.id, 
             cars.name AS car_name, 
             orders.total_amount, 
+            orders.payment_method,
             orders.status, 
             orders.created_at
         FROM orders
