@@ -15,23 +15,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
 
-$user = validateToken(); // This function should decode the token and return user details
-
-$data = json_decode(file_get_contents("php://input"), true);
-
-if (!isset($data['amount'], $data['order_id'])) {
-    http_response_code(400);
-    echo json_encode(["error" => "Amount and order ID are required"]);
+try {
+    $user = validateToken(); // This function should decode the token and return user details
+    $user_id = $user['id']; // Extract user_id from the decoded token
+} catch (Exception $e) {
+    http_response_code(401);
+    echo json_encode(["error" => "Unauthorized: " . $e->getMessage()]);
     exit;
 }
 
-$amount = $data['amount'];
-$order_id = $data['order_id'];
+$data = json_decode(file_get_contents("php://input"), true);
 
+if (!isset($data['amount'], $data['order_id'], $data['user_id'])) {
+    http_response_code(400);
+    echo json_encode(["error" => "Amount, order ID, and user ID are required"]);
+    exit;
+}
+
+if (!isset($data['amount'], $data['car_id'], $data['order_id'])) {
+    http_response_code(400);
+    echo json_encode(["error" => "Amount, car ID, and order ID are required"]);
+    exit;
+}
 try {
     // Create a payment intent
     $paymentIntent = \Stripe\PaymentIntent::create([
-        'amount' => $amount * 100, // Amount in cents
+        'amount' => $data['amount'] * 100, // Amount in cents
         'currency' => 'pkr',
         'payment_method_types' => ['card'],
         'description' => 'Payment for order',

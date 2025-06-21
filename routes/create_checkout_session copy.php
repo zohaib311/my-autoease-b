@@ -29,7 +29,7 @@ $data = json_decode(file_get_contents("php://input"), true);
 
 if (!isset($data['amount'], $data['car_id'], $data['order_id'])) {
     http_response_code(400);
-    echo json_encode(["error" => "Amount and car ID are required"]);
+    echo json_encode(["error" => "Amount, car ID, and order ID are required"]);
     exit;
 }
 
@@ -45,7 +45,7 @@ try {
             'price_data' => [
                 'currency' => 'pkr',
                 'product_data' => [
-                    'name' => "Car Purchase (Car ID: $car_id)",
+                    'name' => "Car Purchase (Order ID: $order_id)",
                 ],
                 'unit_amount' => $amount * 100, // Amount in paisa
             ],
@@ -55,13 +55,33 @@ try {
         'success_url' => 'http://localhost:3000/car-list/car-detail/car/' . $car_id . '/place-order/order-Success?session_id={CHECKOUT_SESSION_ID}', // Redirect after success
         'cancel_url' => 'http://localhost:3000/car-list/car-detail/car/' . $car_id . '/place-order/order-cancel', // Redirect after cancellation
     ]);
-    
 
-    echo json_encode(['id' => $session->id, 'message' => 'Checkout session created successfully']);
+    
+    // $paymentIntent = \Stripe\PaymentIntent::create([
+    //     'amount' => $data['amount'] * 100, // Amount in cents
+    //     'currency' => 'pkr',
+    //     'payment_method_types' => ['card'],
+    //     'description' => 'Payment for order',
+    // ]);
+    // // Retrieve the payment intent ID
+    // $payment_intent_id = $paymentIntent->id ?? null;
+
+    // if (!$payment_intent_id) {
+    //     throw new Exception("Payment intent ID is missing from the Stripe session.");
+    // }
+
+    // // Save payment details in the database
+    // $stmt = $conn->prepare("INSERT INTO payment_details (user_id, order_id, amount, payment_intent_id, status) VALUES (?, ?, ?, ?, ?)");
+    // $status = 'pending'; // Default status
+    // $stmt->bind_param("iidss", $user_id, $order_id, $amount, $payment_intent_id, $status);
+
+    // if ($stmt->execute()) {
+    //     echo json_encode(['id' => $session->id, 'payment_intent_id' => $payment_intent_id, 'message' => 'Checkout session created and payment details saved successfully']);
+    // } else {
+    //     throw new Exception("Failed to save payment details in the database");
+    // }
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['error' => $e->getMessage()]);
 }
-
-
 ?>
