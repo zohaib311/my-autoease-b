@@ -27,37 +27,53 @@ try {
 
 $data = json_decode(file_get_contents("php://input"), true);
 
-if (!isset($data['amount'], $data['car_id'], $data['order_id'])) {
+// Accept either car_id or installment_id
+if (!isset($data['amount'], $data['order_id']) || (!isset($data['car_id']) && !isset($data['installment_id']))) {
     http_response_code(400);
-    echo json_encode(["error" => "Amount and car ID are required"]);
+    echo json_encode(["error" => "Amount, order_id and car_id or installment_id are required"]);
     exit;
 }
 
 $amount = $data['amount'];
-$car_id = $data['car_id'];
 $order_id = $data['order_id'];
+$car_id = isset($data['car_id']) ? $data['car_id'] : null;
+$installment_id = isset($data['installment_id']) ? $data['installment_id'] : null;
+
+// Use car_id or installment_id for session/product name
+$productName = $car_id
+    ? "Car Purchase (Order ID: $order_id)"
+    : "Installment Payment (Order ID: $order_id, Installment ID: $installment_id)";
 
 try {
-    // Create a Stripe Checkout session
     $session = \Stripe\Checkout\Session::create([
         'payment_method_types' => ['card'],
         'line_items' => [[
             'price_data' => [
                 'currency' => 'pkr',
                 'product_data' => [
-                    'name' => "Car Purchase (Car ID: $car_id)",
+                    'name' => $productName,
                 ],
-                'unit_amount' => $amount * 100, // Amount in paisa
+                'unit_amount' => $amount * 100,
             ],
             'quantity' => 1,
         ]],
         'mode' => 'payment',
-        'success_url' => 'http://localhost:3000/car-list/car-detail/car/' . $car_id . '/place-order/order-Success?session_id={CHECKOUT_SESSION_ID}', // Redirect after success
-        'cancel_url' => 'http://localhost:3000/car-list/car-detail/car/' . $car_id . '/place-order/order-cancel', // Redirect after cancellation
+        'success_url' => 'http://localhost:3000/' . ($car_id ?? 'installment') . '/place-order/order-Success?session_id={CHECKOUT_SESSION_ID}&order_id=' . $order_id,
+        'cancel_url' => 'http://localhost:3000/' . ($car_id ?? 'installment') . '/place-order/order-cancel',
     ]);
-    
 
-    echo json_encode(['id' => $session->id, 'message' => 'Checkout session created successfully']);
+    // Save payment details in the database, including installment_id if present
+    $stmt = $conn->prepare("INSERT INTO payment_details (user_id, order_id, amount, currency, status, installment_id) VALUES (?, ?, ?, ?, ?, ?)");
+    $currency = 'pkr';
+    $status = 'pending';
+    $stmt->bind_param("iidssi", $user_id, $order_id, $amount, $currency, $status, $installment_id);
+
+    if ($stmt->execute()) {
+        echo json_encode(['id' => $session->id, 'message' => 'Checkout session created successfully']);
+    } else {
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to save payment details']);
+    }
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['error' => $e->getMessage()]);
