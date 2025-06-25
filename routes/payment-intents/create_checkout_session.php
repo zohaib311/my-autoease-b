@@ -1,7 +1,7 @@
 <?php
-require_once '../vendor/autoload.php';
-require_once '../config_db.php'; // Include your database connection
-require_once '../controller/auth/validate_token.php'; // Include authentication middleware
+require_once '../../vendor/autoload.php';
+require_once '../../config_db.php'; // Include your database connection
+require_once '../../controller/auth/validate_token.php'; // Include authentication middleware
 
 \Stripe\Stripe::setApiKey('sk_test_51RJgLmQpF59V7kiLqlA1zyl2Loj2cxnSDZmnTcixZYzCDLO8TZzJg5vF3KpmQvG4QB67zzb3bjE0XcC6UVBgS2eI008RIlUpfj'); // Replace with your Stripe Secret Key
 
@@ -58,7 +58,7 @@ try {
             'quantity' => 1,
         ]],
         'mode' => 'payment',
-        'success_url' => 'http://localhost:3000/' . ($car_id ?? 'installment') . '/place-order/order-Success?session_id={CHECKOUT_SESSION_ID}&order_id=' . $order_id,
+        'success_url' => 'http://localhost:3000/' . ($car_id ?? 'installment') . '/place-order/order-success?session_id={CHECKOUT_SESSION_ID}&order_id=' . $order_id,
         'cancel_url' => 'http://localhost:3000/' . ($car_id ?? 'installment') . '/place-order/order-cancel',
     ]);
 

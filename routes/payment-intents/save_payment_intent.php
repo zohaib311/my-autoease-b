@@ -1,8 +1,7 @@
-
 <?php
-require_once '../vendor/autoload.php';
-require_once '../config_db.php';
-require_once '../controller/auth/validate_token.php';
+require_once '../../vendor/autoload.php';
+require_once '../../config_db.php';
+require_once '../../controller/auth/validate_token.php';
 
 \Stripe\Stripe::setApiKey('sk_test_51RJgLmQpF59V7kiLqlA1zyl2Loj2cxnSDZmnTcixZYzCDLO8TZzJg5vF3KpmQvG4QB67zzb3bjE0XcC6UVBgS2eI008RIlUpfj');
 
