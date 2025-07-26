@@ -19,8 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 try {
-    $user = validateToken(); // Validate user token
-    $user_id = $user['id']; // Get user ID from token
+    $user = validateToken(); 
+    $user_id = $user['id']; 
     $data = json_decode(file_get_contents("php://input"), true);
 
     if (!isset($data['installments'], $data['order_id'], $data['car_id'])) {
