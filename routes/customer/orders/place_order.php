@@ -5,8 +5,8 @@ header("Access-Control-Allow-Headers: Content-Type, Authorization"); // Allow sp
 header("Access-Control-Allow-Credentials: true"); // Allow credentials (if needed)
 header("Content-Type: application/json");
 
-require '../config_db.php'; // Include your database connection
-require '../controller/auth/validate_token.php'; // Include authentication middleware
+require '../../../config_db.php'; // Include your database connection
+require '../../../controller/auth/validate_token.php'; // Include authentication middleware
 
 // Handle preflight (OPTIONS) requests
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {

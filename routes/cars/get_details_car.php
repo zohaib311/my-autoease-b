@@ -5,7 +5,7 @@ header("Access-Control-Allow-Headers: Content-Type");
 header("Access-Control-Allow-Methods: GET, POST, DELETE, PUT, OPTIONS");
 header("Content-Type: application/json");
 
-include "../config_db.php";
+include "../../config_db.php";
 
 
 $id = $_GET['id'];

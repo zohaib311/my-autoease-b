@@ -11,8 +11,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 // Include your database connection and token validation
-require '../config_db.php';
-require '../controller/auth/validate_token.php'; // Include the validateToken function
+require '../../../config_db.php';
+require '../../../controller/auth/validate_token.php'; // Include the validateToken function
 
 // Validate the token and get the user details
 try {
