@@ -1,6 +1,8 @@
 <?php
-header("Access-Control-Allow-Origin: http://localhost:3000");
-header("Access-Control-Allow-Methods: GET, OPTIONS"); 
+require_once __DIR__ . '/../../headers/headers.php';
+
+// header("Access-Control-Allow-Origin: http://localhost:3000");
+// header("Access-Control-Allow-Methods: GET, OPTIONS"); 
       
 require '../../config_db.php';
 require '../../controller/auth/validate_token.php';

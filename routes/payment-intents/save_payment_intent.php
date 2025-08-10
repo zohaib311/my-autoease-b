@@ -1,14 +1,18 @@
 <?php
+require_once __DIR__ . '/../../headers/headers.php';
 require_once '../../vendor/autoload.php';
 require_once '../../config_db.php';
 require_once '../../controller/auth/validate_token.php';
 
-\Stripe\Stripe::setApiKey('sk_test_51RJgLmQpF59V7kiLqlA1zyl2Loj2cxnSDZmnTcixZYzCDLO8TZzJg5vF3KpmQvG4QB67zzb3bjE0XcC6UVBgS2eI008RIlUpfj');
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+$stripeSecretKey = $_ENV['STRIPE_SECRET_KEY'];
+\Stripe\Stripe::setApiKey($stripeSecretKey);
 
-header("Access-Control-Allow-Origin: http://localhost:3000");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
-header("Content-Type: application/json");
+// header("Access-Control-Allow-Origin: http://localhost:3000");
+// header("Access-Control-Allow-Methods: POST, OPTIONS");
+// header("Access-Control-Allow-Headers: Content-Type, Authorization");
+// header("Content-Type: application/json");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
