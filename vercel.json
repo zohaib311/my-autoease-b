@@ -1,13 +1,13 @@
 {
   "builds": [
     {
-      "srs": "./server.js",
+      "src": "./server.js",
       "use": "@vercel/php"
     }
   ],
   "routes": [
     {
-      "srs": "./(.*)",
+      "src": "./(.*)",
       "dest": "/server.php"
     },
     {
