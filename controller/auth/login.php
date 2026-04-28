@@ -1,11 +1,9 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Content-Type: application/json");
+require_once __DIR__ . "/../../headers/headers.php";
 
 include_once __DIR__ . "/../../vendor/autoload.php"; // Include Composer's autoloader
 use Firebase\JWT\JWT;
-include "../../config_db.php";
+include __DIR__ . "/../../config_db.php";
 
 $data = json_decode(file_get_contents("php://input"));
 

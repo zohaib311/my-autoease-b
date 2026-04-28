@@ -1,14 +1,10 @@
 <?php
-header("Access-Control-Allow-Origin: http://localhost:3000");
-header("Access-Control-Allow-Methods: GET, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
-header("Access-Control-Allow-Credentials: true");
-header("Content-Type: application/json");
+require_once __DIR__ . "/../../headers/headers.php";
 
 // require "./../../../includes/cors.php"; // Include CORS headers
 require_once __DIR__ . "/../../config_db.php"; // Include database connection
 // require_once __DIR__ . "/../../includes/secret_key.php"; // Include secret key
-require './validate_token.php';
+require __DIR__ . '/validate_token.php';
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;

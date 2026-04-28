@@ -4,9 +4,7 @@ require_once '../../vendor/autoload.php';
 require_once '../../config_db.php';
 require_once '../../controller/auth/validate_token.php';
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
-$stripeSecretKey = $_ENV['STRIPE_SECRET_KEY'];
+$stripeSecretKey = app_env('STRIPE_SECRET_KEY', '');
 \Stripe\Stripe::setApiKey($stripeSecretKey);
 
 // header("Access-Control-Allow-Origin: http://localhost:3000");
@@ -40,6 +38,10 @@ $session_id = $data['session_id'];
 $order_id = $data['order_id'];
 
 try {
+    if ($stripeSecretKey === '') {
+        throw new Exception("Stripe secret key is not configured.");
+    }
+
     // Retrieve the Stripe session and payment intent
     $session = \Stripe\Checkout\Session::retrieve($session_id);
     $paymentIntentId = $session->payment_intent;

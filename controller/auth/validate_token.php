@@ -1,11 +1,6 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
-header("Content-Type: application/json");
-
-
+require_once __DIR__ . "/../../headers/headers.php";
 require_once __DIR__ . "/../../config_db.php"; // Include database connection
-include_once __DIR__ . "/../../includes/cors.php"; // Include Composer's autoloader
 
 define("SECRET_KEY", file_get_contents(__DIR__ . "/secret.key")); // Read the secret key
 
@@ -71,10 +66,13 @@ $headers = getallheaders();
     // Return the decoded payload
     return $decodedPayload;
 
-    // If this file is accessed directly, validate the token and return the user details
-    if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-        $decodedPayload = validateToken();
-        echo json_encode(["message" => "Token valid", "user" => $decodedPayload]);
-    }
+}
+
+$isDirectScript = realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === realpath(__FILE__);
+$isRoutedTarget = ($GLOBALS['APP_DISPATCH_TARGET'] ?? null) === realpath(__FILE__);
+
+if (($isDirectScript || $isRoutedTarget) && $_SERVER['REQUEST_METHOD'] === 'GET') {
+    $decodedPayload = validateToken();
+    echo json_encode(["message" => "Token valid", "user" => $decodedPayload]);
 }
 ?>

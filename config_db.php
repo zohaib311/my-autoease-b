@@ -1,21 +1,28 @@
-<?php 
-$servername = "localhost";
-$username = "root";
-$password = "";
-$dbname = "autoease";
+<?php
+require_once __DIR__ . '/includes/app_env.php';
 
-// Create connection
-$conn = new mysqli($servername, $username, $password, $dbname);
+$servername = app_env('DB_HOST', 'localhost');
+$username = app_env('DB_USER', 'root');
+$password = app_env('DB_PASS', '');
+$dbname = app_env('DB_NAME', 'autoease');
+$port = (int) app_env('DB_PORT', '3306');
 
-//Check connection
+$conn = new mysqli($servername, $username, $password, $dbname, $port);
+
 if ($conn->connect_error) {
-  die("Connection failed: " . $conn->connect_error);
+    http_response_code(500);
+    die(json_encode([
+        "success" => false,
+        "message" => "Database connection failed",
+    ]));
 }
 
-// Check if the request is for connection status
+$conn->set_charset('utf8mb4');
+
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['check_connection'])) {
-  echo json_encode(["status" => "Connection successful"]);
-  $conn->close();
-  exit();
+    header('Content-Type: application/json');
+    echo json_encode(["status" => "Connection successful"]);
+    $conn->close();
+    exit();
 }
 ?>

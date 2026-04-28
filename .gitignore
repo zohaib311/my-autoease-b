@@ -1,4 +1,8 @@
 
-
 # dependencies
 vendor/
+
+# local secrets
+.env
+.env.*
+!.env.example

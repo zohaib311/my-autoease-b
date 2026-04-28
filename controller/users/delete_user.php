@@ -1,11 +1,8 @@
 <?php
-header("Access-Control-Allow-Origin: http://localhost:3000");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
-header("Content-Type: application/json");
+require_once __DIR__ . "/../../headers/headers.php";
 
-require '../../config_db.php';
-require '../auth/validate_token.php';
+require __DIR__ . '/../../config_db.php';
+require __DIR__ . '/../auth/validate_token.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
