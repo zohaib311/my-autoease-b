@@ -10,6 +10,16 @@ include "../../config_db.php";
 
 $method = $_SERVER['REQUEST_METHOD'];
 
+function cars_query_failed(mysqli $conn): void
+{
+    http_response_code(500);
+    echo json_encode([
+        "success" => false,
+        "message" => "Cars query failed",
+        "error" => $conn->error,
+    ]);
+}
+
 if ($method == "OPTIONS") {
         http_response_code(200);
     exit(0);
@@ -34,7 +44,7 @@ if ($method == "POST") {
         move_uploaded_file($_FILES['image']['tmp_name'], $target_file);
 
         $sql = "INSERT INTO cars (name, year, manufacturer, transmission, fuel_type, price, image, created_at, available_city)
-                VALUES ('$name', '$year', '$manufacturer', '$transmission', '$fuel_type', '$price', '$target_file', '$available_city', NOW())";
+                VALUES ('$name', '$year', '$manufacturer', '$transmission', '$fuel_type', '$price', '$target_file', NOW(), '$available_city')";
 
         if ($conn->query($sql) === TRUE) {
             echo json_encode(["message" => "Car added successfully"]);
@@ -51,6 +61,12 @@ if ($method == "POST") {
 if ($method == "GET") {
     $sql = "SELECT * FROM cars ORDER BY created_at DESC";
     $result = $conn->query($sql);
+
+    if ($result === false) {
+        cars_query_failed($conn);
+        $conn->close();
+        exit;
+    }
 
     if ($result->num_rows > 0) {
         $cars = [];
@@ -72,7 +88,7 @@ if ($method == "DELETE") {
         if ($conn->query($sql) === TRUE) {
             echo json_encode(["message" => "Car deleted successfully"]);
         } else {
-            echo json_encode(["error" => "Error: " . $conn->error]);
+            cars_query_failed($conn);
         }
     } else {
         echo json_encode(["error" => "Invalid car ID"]);
@@ -99,7 +115,7 @@ if ($method == "PUT") {
         if ($conn->query($sql) === TRUE) {
             echo json_encode(["message" => "Car updated successfully"]);
         } else {
-            echo json_encode(["error" => "Error: " . $conn->error]);
+            cars_query_failed($conn);
         }
     } else {
         echo json_encode(["error" => "Invalid input"]);

@@ -17,11 +17,87 @@ if (!function_exists('app_load_env')) {
             require_once $autoloadPath;
         }
 
+        app_load_php_config(APP_ROOT . '/includes/server_config.php');
+
         if (class_exists(Dotenv\Dotenv::class)) {
             Dotenv\Dotenv::createImmutable(APP_ROOT)->safeLoad();
         }
 
+        app_load_env_file(APP_ROOT . '/.env');
+
         $loaded = true;
+    }
+}
+
+if (!function_exists('app_set_env')) {
+    function app_set_env(string $key, ?string $value): void
+    {
+        if ($value === null || $value === '') {
+            return;
+        }
+
+        $_ENV[$key] = $value;
+        $_SERVER[$key] = $value;
+        putenv($key . '=' . $value);
+    }
+}
+
+if (!function_exists('app_load_php_config')) {
+    function app_load_php_config(string $path): void
+    {
+        if (!is_file($path) || !is_readable($path)) {
+            return;
+        }
+
+        $config = require $path;
+
+        if (!is_array($config)) {
+            return;
+        }
+
+        foreach ($config as $key => $value) {
+            app_set_env((string) $key, is_scalar($value) ? (string) $value : null);
+        }
+    }
+}
+
+if (!function_exists('app_load_env_file')) {
+    function app_load_env_file(string $path): void
+    {
+        if (!is_file($path) || !is_readable($path)) {
+            return;
+        }
+
+        $lines = file($path, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+
+        if ($lines === false) {
+            return;
+        }
+
+        foreach ($lines as $line) {
+            $line = trim($line);
+
+            if ($line === '' || str_starts_with($line, '#') || !str_contains($line, '=')) {
+                continue;
+            }
+
+            [$key, $value] = explode('=', $line, 2);
+            $key = trim($key);
+            $value = trim($value);
+
+            if ($key === '') {
+                continue;
+            }
+
+            if (
+                (str_starts_with($value, '"') && str_ends_with($value, '"')) ||
+                (str_starts_with($value, "'") && str_ends_with($value, "'"))
+            ) {
+                $value = substr($value, 1, -1);
+            }
+
+            app_set_env($key, $value);
+        }
     }
 }
 

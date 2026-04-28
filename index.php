@@ -3,6 +3,46 @@ define('APP_ROOT', __DIR__);
 
 require_once APP_ROOT . '/includes/app_env.php';
 
+function dispatch_json_error(string $message, int $statusCode = 500, array $extra = []): void
+{
+    while (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+
+    header('Content-Type: application/json');
+    http_response_code($statusCode);
+    echo json_encode(array_merge([
+        'success' => false,
+        'message' => $message,
+    ], $extra));
+}
+
+set_error_handler(function (int $severity, string $message, string $file, int $line): bool {
+    if (!(error_reporting() & $severity)) {
+        return false;
+    }
+
+    throw new ErrorException($message, 0, $severity, $file, $line);
+});
+
+register_shutdown_function(function (): void {
+    $error = error_get_last();
+
+    if ($error === null) {
+        return;
+    }
+
+    $fatalTypes = [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR];
+
+    if (in_array($error['type'], $fatalTypes, true)) {
+        dispatch_json_error('PHP fatal error', 500, [
+            'error' => $error['message'],
+            'file' => basename($error['file']),
+            'line' => $error['line'],
+        ]);
+    }
+});
+
 $routes = [
     '' => null,
     'health' => null,
@@ -93,6 +133,18 @@ if (!is_file($target)) {
 $previousDirectory = getcwd();
 chdir(dirname($target));
 $GLOBALS['APP_DISPATCH_TARGET'] = realpath($target);
-require $target;
-chdir($previousDirectory);
+
+try {
+    ob_start();
+    require $target;
+    ob_end_flush();
+} catch (Throwable $error) {
+    dispatch_json_error('API route failed', 500, [
+        'error' => $error->getMessage(),
+        'file' => basename($error->getFile()),
+        'line' => $error->getLine(),
+    ]);
+} finally {
+    chdir($previousDirectory);
+}
 ?>

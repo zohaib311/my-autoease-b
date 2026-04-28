@@ -35,6 +35,17 @@ $sql .= " ORDER BY created_at DESC";
 
 $result = $conn->query($sql);
 
+if ($result === false) {
+    http_response_code(500);
+    echo json_encode([
+        "success" => false,
+        "message" => "Cars filter query failed",
+        "error" => $conn->error,
+    ]);
+    $conn->close();
+    exit;
+}
+
 if ($result->num_rows > 0) {
     $cars = [];
     while ($row = $result->fetch_assoc()) {
