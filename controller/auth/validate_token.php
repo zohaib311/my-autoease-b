@@ -1,13 +1,11 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
-header("Content-Type: application/json");
-
-
 require_once __DIR__ . "/../../config_db.php"; // Include database connection
 include_once __DIR__ . "/../../includes/cors.php"; // Include Composer's autoloader
 
-define("SECRET_KEY", file_get_contents(__DIR__ . "/secret.key")); // Read the secret key
+$secretKey = app_jwt_secret();
+if (!defined("SECRET_KEY")) {
+    define("SECRET_KEY", $secretKey);
+}
 
 
 function validateToken() {

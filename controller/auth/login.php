@@ -1,11 +1,9 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type");
-header("Content-Type: application/json");
+require_once __DIR__ . "/../../headers/headers.php";
 
 include_once __DIR__ . "/../../vendor/autoload.php"; // Include Composer's autoloader
 use Firebase\JWT\JWT;
-include "../../config_db.php";
+include __DIR__ . "/../../config_db.php";
 
 $data = json_decode(file_get_contents("php://input"));
 
@@ -31,7 +29,7 @@ if ($result->num_rows > 0) {
             "exp" => time() + 3600 // Token expires in 1 hour
         ];
 
-        $secretKey = file_get_contents(__DIR__ . "/secret.key"); // Read the secret key
+        $secretKey = app_jwt_secret();
         $jwt = JWT::encode($payload, $secretKey, 'HS256'); // Generate the JWT token
 
         echo json_encode([

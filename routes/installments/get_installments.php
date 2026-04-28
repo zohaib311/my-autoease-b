@@ -4,8 +4,8 @@ require_once __DIR__ . '/../../headers/headers.php';
 // header("Access-Control-Allow-Origin: http://localhost:3000");
 // header("Access-Control-Allow-Methods: GET, OPTIONS"); 
       
-require '../../config_db.php';
-require '../../controller/auth/validate_token.php';
+require __DIR__ . '/../../config_db.php';
+require __DIR__ . '/../../controller/auth/validate_token.php';
 try {
     $user = validateToken(); // Validate user token
 

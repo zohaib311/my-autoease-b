@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../headers/headers.php';
-require_once '../../config_db.php';
-require_once '../../controller/auth/validate_token.php';
+require_once __DIR__ . '/../../config_db.php';
+require_once __DIR__ . '/../../controller/auth/validate_token.php';
 
 // header("Access-Control-Allow-Origin: http://localhost:3000");
 // header("Access-Control-Allow-Methods: POST, OPTIONS");

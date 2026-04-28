@@ -6,7 +6,7 @@ require_once __DIR__ . '/../../headers/headers.php';
 // header("Access-Control-Allow-Methods: GET, POST, DELETE, PUT, OPTIONS");
 // header("Content-Type: application/json");
 
-include "../../config_db.php";
+include __DIR__ . "/../../config_db.php";
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -29,12 +29,17 @@ if ($method == "POST") {
         
         // Handle file upload
         $image = time().$_FILES['image']['name'];
-        $target_dir = "../../uploads/";
+        $target_dir = __DIR__ . "/../../uploads/";
+        if (!is_dir($target_dir)) {
+            mkdir($target_dir, 0775, true);
+        }
+
         $target_file = $target_dir . basename($image);
+        $stored_file = "uploads/" . basename($image);
         move_uploaded_file($_FILES['image']['tmp_name'], $target_file);
 
         $sql = "INSERT INTO cars (name, year, manufacturer, transmission, fuel_type, price, image, created_at, available_city)
-                VALUES ('$name', '$year', '$manufacturer', '$transmission', '$fuel_type', '$price', '$target_file', '$available_city', NOW())";
+                VALUES ('$name', '$year', '$manufacturer', '$transmission', '$fuel_type', '$price', '$stored_file', NOW(), '$available_city')";
 
         if ($conn->query($sql) === TRUE) {
             echo json_encode(["message" => "Car added successfully"]);

@@ -5,7 +5,7 @@ require_once __DIR__ . '/../../headers/headers.php';
 // header("Access-Control-Allow-Headers: Content-Type");
 // header("Content-Type: application/json");
 
-include "../../config_db.php";
+include __DIR__ . "/../../config_db.php";
 
 $manufacturer = isset($_GET['manufacturer']) ? $conn->real_escape_string($_GET['manufacturer']) : '';
 $transmission = isset($_GET['transmission']) ? $conn->real_escape_string($_GET['transmission']) : '';

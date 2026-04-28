@@ -1,5 +1,5 @@
 <?php
-require_once '../../../config_db.php';
+require_once __DIR__ . '/../../../config_db.php';
 require_once __DIR__ . '/../../../headers/headers.php';
 
 // header("Access-Control-Allow-Origin: http://localhost:3000"); // Allow requests from your frontend origin

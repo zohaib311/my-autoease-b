@@ -1,12 +1,15 @@
 <?php
 require_once __DIR__ . '/../../headers/headers.php';
-require_once '../../vendor/autoload.php';
-require_once '../../config_db.php';
-require_once '../../controller/auth/validate_token.php';
+require_once __DIR__ . '/../../vendor/autoload.php';
+require_once __DIR__ . '/../../config_db.php';
+require_once __DIR__ . '/../../controller/auth/validate_token.php';
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
-$stripeSecretKey = $_ENV['STRIPE_SECRET_KEY'];
+$stripeSecretKey = app_env('STRIPE_SECRET_KEY');
+if (!$stripeSecretKey) {
+    http_response_code(500);
+    echo json_encode(["error" => "STRIPE_SECRET_KEY is not configured"]);
+    exit;
+}
 \Stripe\Stripe::setApiKey($stripeSecretKey);
 
 // header("Access-Control-Allow-Origin: http://localhost:3000");

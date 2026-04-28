@@ -6,8 +6,8 @@ require_once __DIR__ . '/../../headers/headers.php';
 // header("Access-Control-Allow-Headers: Content-Type, Authorization");
 // header("Content-Type: application/json");
 
-require '../../config_db.php';
-require '../../controller/auth/validate_token.php';
+require __DIR__ . '/../../config_db.php';
+require __DIR__ . '/../../controller/auth/validate_token.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);

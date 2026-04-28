@@ -6,7 +6,7 @@ require_once __DIR__ . '/../../headers/headers.php';
 // header("Access-Control-Allow-Methods: GET, POST, DELETE, PUT, OPTIONS");
 // header("Content-Type: application/json");
 
-include "../../config_db.php";
+include __DIR__ . "/../../config_db.php";
 
 
 $id = $_GET['id'];
