@@ -8,6 +8,7 @@ include __DIR__ . "/../../config_db.php";
 $data = json_decode(file_get_contents("php://input"));
 
 if (!isset($data->email) || !isset($data->password)) {
+    http_response_code(400);
     echo json_encode(["error" => "Invalid input"]);
     exit;
 }
@@ -18,6 +19,13 @@ $password = $data->password;
 // Fetch user from database
 $sql = "SELECT * FROM users WHERE email='$email'";
 $result = $conn->query($sql);
+
+if ($result === false) {
+    http_response_code(500);
+    echo json_encode(["error" => "Login query failed"]);
+    $conn->close();
+    exit;
+}
 
 if ($result->num_rows > 0) {
     $user = $result->fetch_assoc();

@@ -32,7 +32,7 @@ if ($conn->connect_error) {
 }
 
 // Check if the request is for connection status
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['check_connection'])) {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'GET' && isset($_GET['check_connection'])) {
   echo json_encode(["status" => "Connection successful"]);
   $conn->close();
   exit();
