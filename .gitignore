@@ -6,4 +6,7 @@ vendor/
 .env
 .env.*
 !.env.example
+!.env.local.example
 includes/server_config.php
+deploy_*.zip
+*.rar

@@ -24,6 +24,7 @@ if (!function_exists('app_load_env')) {
         }
 
         app_load_env_file(APP_ROOT . '/.env');
+        app_load_env_file(APP_ROOT . '/.env.local');
 
         $loaded = true;
     }
@@ -32,7 +33,7 @@ if (!function_exists('app_load_env')) {
 if (!function_exists('app_set_env')) {
     function app_set_env(string $key, ?string $value): void
     {
-        if ($value === null || $value === '') {
+        if ($value === null) {
             return;
         }
 
@@ -108,7 +109,7 @@ if (!function_exists('app_env')) {
 
         $value = $_ENV[$key] ?? $_SERVER[$key] ?? getenv($key);
 
-        if ($value === false || $value === null || $value === '') {
+        if ($value === false || $value === null) {
             return $default;
         }
 
